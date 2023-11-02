@@ -14,12 +14,29 @@ import {
     Engine,
     StandardMaterial,
     Texture,
+    TargetCamera,
+    Sprite,
+    SpriteManager
   } from "@babylonjs/core";
   //-------------------------------------------
   //-------------------------------------------
 
 
   //Middle of code-----------------------------
+
+  function createTerrain (scene: Scene) {
+    const largeGround = MeshBuilder.CreateGroundFromHeightMap("largeGround", "https://assets.babylonjs.com/environments/villageheightmap.png", {width:150, height:150, subdivisions: 20, minHeight:0, maxHeight: 10});
+
+     //Create large ground for valley environment
+     const largeGroundMat = new StandardMaterial("largeGroundMat");
+     largeGroundMat.diffuseTexture = new Texture("https://assets.babylonjs.com/environments/valleygrass.png");
+     
+     largeGround.material = largeGroundMat;
+     return largeGround;
+ 
+     
+     return scene;
+  }
   
   function createBox(scene: Scene, px: number, py: number, pz: number, sx: number, sy: number, sz: number) {
     let box = MeshBuilder.CreateBox("box",{size: 1}, scene);
@@ -28,6 +45,7 @@ import {
 
     return box;
   }
+  //h
 
   // faced box function 
   function createFacedBox(scene: Scene, px: number, py: number, pz: number) {
@@ -91,12 +109,15 @@ import {
     camera.attachControl(true);
     return camera;
   }
-  
+  // function to create any light
+
+
   export default function createStartScene(engine: Engine) {
     interface SceneData {
       scene: Scene;
       box?: Mesh;
       facebox?:Mesh;
+      terrain?:Mesh;
       light?: Light;
       sphere?: Mesh;
       ground?: Mesh;
@@ -105,12 +126,14 @@ import {
   
     let that: SceneData = { scene: new Scene(engine) };
     that.scene.debugLayer.show();
-  
+
+    that.terrain = createTerrain(that.scene);
     that.box = createBox(that.scene, 2, 5, 3, 3, 2, 1);
     //that.facebox = createFacedBox(that.scene, 2, 5, 3,);
     that.light = createLight(that.scene);
     that.sphere = createSphere(that.scene);
     that.ground = createGround(that.scene);
     that.camera = createArcRotateCamera(that.scene);
+
     return that;
   }
