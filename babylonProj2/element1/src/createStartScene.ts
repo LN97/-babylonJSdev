@@ -37,7 +37,7 @@ import {
 
     const faceUV = new Array(6);
 
- 
+ // for
     for (var i = 0; i < 6; i++) {
       faceUV[i] = new Vector4((i+1));
     }
@@ -107,7 +107,7 @@ import {
     that.scene.debugLayer.show();
   
     that.box = createBox(that.scene, 2, 5, 3, 3, 2, 1);
-    that.facebox = createFacedBox(that.scene, 2, 5, 3,);
+    //that.facebox = createFacedBox(that.scene, 2, 5, 3,);
     that.light = createLight(that.scene);
     that.sphere = createSphere(that.scene);
     that.ground = createGround(that.scene);
