@@ -23,52 +23,42 @@ import {
   //-------------------------------------------
   //-------------------------------------------
 
-
+  let verticalNum = 0
+  let horizontalNum = 0
+  let mainBody: Mesh;
   //Middle of code-----------------------------
-  let shadowGen
-  function createBox(scene: Scene, px: number, py: number, pz: number, sx: number, sy: number, sz: number) {
+  function createBox(scene: Scene, shadowGen) {
+    const meshId = Math.random().toLocaleString().split(".")[1]
+    console.log(meshId)
+
     var mat = new StandardMaterial("mat", scene);
-    var texture = new Texture("https://doc.babylonjs.com/img/getstarted/semihouse.png", scene);
-    // mat.diffuseColor = new Color3(0,1,4);
+    var texture = new Texture("https://dl.polyhaven.org/file/ph-assets/Textures/jpg/4k/factory_wall/factory_wall_diff_4k.jpg", scene);
+    mat.diffuseTexture = texture
 
-    var columns = 6;  // 6 columns
-    var rows = 1;  // 1 row
+    // var columns = 6;  // 6 columns
+    // var rows = 1;  // 1 row
 
-    //alien sprite
-    var faceUV = new Array(6);
+    // //alien sprite
+    // var faceUV = new Array(6);
 
-    //set all faces to same
-    // for (var i = 0; i < 6; i++) {
-    //     faceUV[i] = new Vector4(i / columns, 0, (i + 1) / columns, 1 / rows);
-    //     console.log(faceUV[i])
-    // }
+    // //set all faces to same
+    // // for (var i = 0; i < 6; i++) {
+    // //     faceUV[i] = new Vector4(i / columns, 0, (i + 1) / columns, 1 / rows);
+    // //     console.log(faceUV[i])
+    // // }
 
-    var box = MeshBuilder.CreateBox('box', {
-        faceColors: [
-          new Color4(0,3,0, 1),
-          new Color4(1,1,0,1),
-          new Color4(1,1,2,1),
-        ],
-        wrap: true,
-        size: 2
-    }, scene);
-    box.material = mat;
+    var box = MeshBuilder.CreateSphere(meshId, {diameter: 1}, scene);
+    shadowGen.addShadowCaster(box)
+    box.position = new Vector3(1,2,1)
+    setInterval(() => {
+      box.locallyTranslate(new Vector3(0,0,.2))
+    }, 1000)
+    box.material = mat
+    mainBody = box
 
-    const box2 = MeshBuilder.CreateBox('box', {
-      size: 2
-  }, scene);
-  box2.position = new Vector3(-1,0,2)
+    // const anyObj = MeshBuilder.CreateDisc("disc", { tessellation: 20}, scene)
 
-    setTimeout(() => {
-      console.log("ready")
-      const combinedMesh = Mesh.MergeMeshes([box, box2])
-      
-      if(combinedMesh){
-        console.log(combinedMesh)
-        combinedMesh.locallyTranslate(new Vector3(0,2,0))
-      }
-    }, 3000)
-    return box;
+    return  box;
   }
 
   // faced box function 
@@ -105,23 +95,17 @@ import {
 
   
   function createLight(scene: Scene) {
-    const light = new HemisphericLight("light", new Vector3(0, 1, 0), scene);
-    light.intensity = 0.5;
 
-    const dirLight = new DirectionalLight("light", new Vector3(-4, -10, 1), scene);
-    dirLight.intensity = 10
+    const dirLight = new DirectionalLight("light", new Vector3(2, -2, 0), scene);
+    dirLight.intensity = .5
 
-    shadowGen = new ShadowGenerator(1024, dirLight)
-    shadowGen.setDarkness(0.5)
-    
-    var box = MeshBuilder.CreateBox('new', {
-      size: 2
-  }, scene);
-  box.position = new Vector3(6,2,2)
-    shadowGen.addShadowCaster(box)
-    console.log(shadowGen)
-    setInterval(() => box.locallyTranslate(new Vector3(0,0,.2)), 500)
-    return light;
+    const shadowGen = new ShadowGenerator(1024, dirLight)
+    // shadowGen.setDarkness(.1)
+
+    shadowGen.useExponentialShadowMap = true
+    shadowGen.useKernelBlur = true
+    shadowGen.blurKernel = 200
+    return {dirLight, shadowGen};
   }
   
   function createSphere(scene: Scene) {
@@ -132,11 +116,11 @@ import {
     );
     const sphereMat = new StandardMaterial("groundMat", scene)
     sphere.material = sphereMat
-    sphereMat.wireframe = true
+    // sphereMat.wireframe = true
     sphere.position.y = 4;
 
-    shadowGen.addShadowCaster(sphere)
-    console.log(shadowGen)
+    // shadowGen.addShadowCaster(sphere)
+    // console.log(shadowGen)
     return sphere;
   }
   
@@ -154,19 +138,25 @@ import {
     groundMat.specularColor = new Color3(0,0,0)
     const diffuseTex = new Texture("https://dl.polyhaven.org/file/ph-assets/Textures/jpg/4k/grey_stone_path/grey_stone_path_diff_4k.jpg")
     groundMat.diffuseTexture = diffuseTex
+    
     groundMat.bumpTexture = new Texture("https://dl.polyhaven.org/file/ph-assets/Textures/jpg/4k/grey_stone_path/grey_stone_path_nor_gl_4k.jpg")
     
-    // diffuseTex.uScale = 10
-    // diffuseTex.vScale = 10
+    diffuseTex.uScale = 10
+    diffuseTex.vScale = 10
 
     ground.receiveShadows = true
     return ground;
+  }
+
+  function toRender(mesh: Mesh, engine){ //60
+    const deltaT = engine.getDeltaTime()
+    mainBody && mainBody.locallyTranslate(new Vector3(horizontalNum,0, verticalNum))
   }
   //--------------------------------------------------
   //--------------------------------------------------
   //Bottom of Code
   
-  function createArcRotateCamera(scene: Scene) {
+  function createArcRotateCamera(scene: Scene, box: Mesh) {
     let camAlpha = -Math.PI / 2,
       camBeta = Math.PI / 2.5,
       camDist = 10,
@@ -181,38 +171,41 @@ import {
     );
     // let camera = new FreeCamera("camera", new Vector3(0,0,-5), scene)
     camera.attachControl(true);
-    const box = scene.getMeshByName("new")
-    if(box)camera.setTarget(box.position)
+    
+    const disc = scene.getMeshByName("disc")
+    camera.setTarget(mainBody)
     
     return camera;
   }
   
   export default function createStartScene(engine: Engine) {
+    const scene = new Scene(engine)
+    const {dirLight, shadowGen} = createLight(scene)
     interface SceneData {
       scene: Scene;
-      box?: Mesh;
+      box: Mesh;
       facebox?:Mesh;
       light?: Light;
       sphere?: Mesh;
       ground?: Mesh;
-      camera?: Camera;
-    
+      camera?: Camera;    
     }
     
-    let that: SceneData = { scene: new Scene(engine) };
-    that.scene.debugLayer.show();
+    let that: SceneData = { 
+      scene,
+      box: createBox(scene, shadowGen)
+    };
+    // that.scene.debugLayer.show();
 
 
 
     // that.box = createBox(that.scene, 2, 5, 3, 3, 2, 1);
     // that.facebox = createFacedBox(that.scene, 2, 5, 3,);
-    that.light = createLight(that.scene);
     
     
-    that.sphere = createSphere(that.scene);
+    // that.sphere = createSphere(that.scene);
     that.ground = createGround(that.scene);
-    that.camera = createArcRotateCamera(that.scene)
-
+    that.camera = createArcRotateCamera(that.scene, that.box)
     // const mainMesh = that.scene.getMeshByName("box")
 
     // const sphereMesh = that.scene.getMeshByName("sphere")
@@ -221,9 +214,45 @@ import {
     //   mainMesh.locallyTranslate(new Vector3(0,0,1))
       
     // }
-    // window.addEventListener("keyup", e => {
-    //   if(e.key === "d") mainMesh?.addRotation(0,.1,0)
-    //   if(e.key === "w") mainMesh?.locallyTranslate(new Vector3(0,0,.1))
-    // })
+    window.addEventListener("keydown", e => {
+      switch(e.key.toLowerCase()){
+        case "w":
+          verticalNum = 1
+
+        break
+        case "s":
+          verticalNum = -1
+        break
+        case "a":
+          horizontalNum = -1
+        break
+        case "d":
+          horizontalNum = 1
+        break
+      }
+
+      // if(e.key === "d") mainMesh?.addRotation(0,.1,0)
+      // if(e.key === "w") mainMesh?.locallyTranslate(new Vector3(0,0,.1))
+    })
+    window.addEventListener("keyup", e => {
+      switch(e.key.toLowerCase()){
+        case "w":
+          verticalNum =0
+        break
+        case "s":
+          verticalNum = 0
+        break
+        case "a":
+          horizontalNum = 0
+        break
+        case "d":
+          horizontalNum =0
+        break
+      }
+    })
+    // window
+    that.scene.registerAfterRender(() => {
+      toRender(that.box, engine)
+    })
     return that;
   }

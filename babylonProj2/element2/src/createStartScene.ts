@@ -33,10 +33,15 @@ import {
   function createTerrain(scene: Scene) {
     //Create large ground for valley environment
     const largeGroundMat = new StandardMaterial("largeGroundMat");
-    largeGroundMat.diffuseTexture = new Texture("https://assets.babylonjs.com/environments/valleygrass.png");
     
+    const terrainTexture = new Texture("https://dl.polyhaven.org/file/ph-assets/Textures/png/4k/red_mud_stones/red_mud_stones_diff_4k.png");
+    terrainTexture.uScale = 15
+    terrainTexture.vScale = 15
+    largeGroundMat.diffuseTexture = terrainTexture
+
     const largeGround = MeshBuilder.CreateGroundFromHeightMap("largeGround", "https://assets.babylonjs.com/environments/villageheightmap.png", {width:150, height:150, subdivisions: 20, minHeight:0, maxHeight: 10});
     largeGround.material = largeGroundMat;
+    largeGroundMat.specularColor = new Color3(0,0,0)
     return largeGround;
   }
 
@@ -44,8 +49,9 @@ import {
   function createGround(scene: Scene) {
     //Create Village ground
     const groundMat = new StandardMaterial("groundMat");
-    groundMat.diffuseTexture = new Texture("https://assets.babylonjs.com/environments/villagegreen.png");
+    groundMat.diffuseTexture = new Texture("https://dl.polyhaven.org/file/ph-assets/Textures/jpg/4k/coast_sand_rocks_02/coast_sand_rocks_02_diff_4k.jpg");
     groundMat.diffuseTexture.hasAlpha = true;
+    groundMat.specularColor = new Color3(0,0,0)
 
     const ground = MeshBuilder.CreateGround("ground", {width:24, height:24});
     ground.material = groundMat;
@@ -270,7 +276,7 @@ import {
     }
   
     let that: SceneData = { scene: new Scene(engine) };
-    that.scene.debugLayer.show();
+    // that.scene.debugLayer.show();
 
     //any further code goes here
     that.terrain = createTerrain(that.scene);
