@@ -32,7 +32,7 @@ import {
     console.log(meshId)
 
     var mat = new StandardMaterial("mat", scene);
-    var texture = new Texture("https://dl.polyhaven.org/file/ph-assets/Textures/jpg/4k/factory_wall/factory_wall_diff_4k.jpg", scene);
+    var texture = new Texture("https://dl.polyhaven.org/file/ph-assets/Textures/jpg/4k/snow_01/snow_01_diff_4k.jpg", scene);
     mat.diffuseTexture = texture
 
     // var columns = 6;  // 6 columns
