@@ -24,13 +24,69 @@ import {
     CubeTexture,
     Sprite,
     SpriteManager,
+    SceneLoader,
+    ActionManager,
+    ExecuteCodeAction,
+
   } from "@babylonjs/core";
   //----------------------------------------------------
   
   //----------------------------------------------------
   //MIDDLE OF CODE - FUNCTIONS
-  
+  function importPlayerMesh(scene, x: number, y: number) {
+    let item = SceneLoader.ImportMesh("", "./models/", "dummy3.babylon", scene,
+   function(newMeshes) {
+    let mesh = newMeshes[0];
 
+    scene.onBeforeRenderObservable.add(()=> {
+      if (keyDownMap["w"] || keyDownMap["ArrowUp"]) {
+      mesh.position.z += 0.1;
+      mesh.rotation.y = 0;
+      }
+      if (keyDownMap["a"] || keyDownMap["ArrowLeft"]) {
+      mesh.position.x -= 0.1;
+      mesh.rotation.y = 3 * Math.PI / 2;
+      }
+      if (keyDownMap["s"] || keyDownMap["ArrowDown"]) {
+      mesh.position.z -= 0.1;
+      mesh.rotation.y = 2 * Math.PI / 2;
+      }
+      if (keyDownMap["d"] || keyDownMap["ArrowRight"]) {
+      mesh.position.x += 0.1;
+      mesh.rotation.y = Math.PI / 2;
+      }
+      });
+
+
+
+    });
+
+    
+    return item;
+    } 
+
+    function actionManager(scene: Scene){
+      scene.actionManager = new ActionManager(scene);
+      scene.actionManager.registerAction(
+      new ExecuteCodeAction(
+      {
+      trigger: ActionManager.OnKeyDownTrigger,
+      //parameters: 'w'
+      },
+      function(evt) {keyDownMap[evt.sourceEvent.key] = true; }
+      )
+      );
+      scene.actionManager.registerAction(
+      new ExecuteCodeAction(
+      {
+      trigger: ActionManager.OnKeyUpTrigger
+     
+      },
+      function(evt) {keyDownMap[evt.sourceEvent.key] = false; }
+      )
+      );
+      return scene.actionManager;
+     } 
 
   //Create more detailed ground
   function createGround(scene: Scene) {
@@ -121,11 +177,14 @@ import {
   export default function createStartScene(engine: Engine) {
     interface SceneData {
       scene: Scene;
-      ground?: Mesh;
+      ground?: Mesh; 
       skybox?: Mesh;
       light?: Light;
       hemisphericLight?: HemisphericLight;
       camera?: Camera;
+      importMesh?: any;
+      actionManager?: any; 
+
     }
   
     let that: SceneData = { scene: new Scene(engine) };
@@ -133,10 +192,15 @@ import {
 
 
 
+
     //any further code goes here
     //-------------------------------------------------------
     that.ground = createGround(that.scene);
     that.skybox = createSkybox(that.scene);
+    that.importMesh = importPlayerMesh(that.scene, 0, 0);
+    that.actionManager = actionManager(that.scene);
+
+
 
     //Scene Lighting & Camera
     that.hemisphericLight = createHemiLight(that.scene);
