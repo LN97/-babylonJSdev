@@ -24,6 +24,8 @@ import {
     CubeTexture,
     Sprite,
     SpriteManager,
+    Scalar,
+    SceneLoader
   } from "@babylonjs/core";
   //----------------------------------------------------
   
@@ -39,9 +41,11 @@ import {
     terrainTexture.vScale = 15
     largeGroundMat.diffuseTexture = terrainTexture
 
-    const largeGround = MeshBuilder.CreateGroundFromHeightMap("largeGround", "https://assets.babylonjs.com/environments/villageheightmap.png", {width:150, height:150, subdivisions: 20, minHeight:0, maxHeight: 10});
+    const largeGround = MeshBuilder.CreateGroundFromHeightMap("largeGround", "./textures/heightmap.png", {width:100, height:100, subdivisions: 20, minHeight:0, maxHeight: 50});
     largeGround.material = largeGroundMat;
     largeGroundMat.specularColor = new Color3(0,0,0)
+    
+    console.log(largeGround)
     return largeGround;
   }
 
@@ -49,6 +53,7 @@ import {
   function createGround(scene: Scene) {
     //Create Village ground
     const groundMat = new StandardMaterial("groundMat");
+    
     groundMat.diffuseTexture = new Texture("https://dl.polyhaven.org/file/ph-assets/Textures/jpg/4k/coast_sand_rocks_02/coast_sand_rocks_02_diff_4k.jpg");
     groundMat.diffuseTexture.hasAlpha = true;
     groundMat.specularColor = new Color3(0,0,0)
@@ -56,6 +61,7 @@ import {
     const ground = MeshBuilder.CreateGround("ground", {width:24, height:24});
     ground.material = groundMat;
     ground.position.y = 0.01;
+    ground.isVisible = false
     return ground;
   }
 
@@ -72,6 +78,14 @@ import {
 	  skybox.material = skyboxMaterial;
     return skybox;
   }
+
+    //Create Skybox
+    function createHdrEnvironment(scene: Scene) {
+      let hdrTexture = CubeTexture.CreateFromPrefilteredData("./textures/environment.env", scene)
+
+      scene.createDefaultSkybox(hdrTexture, false)
+
+    }
 
   //Creating sprite trees
   function createTrees(scene: Scene) {
@@ -255,7 +269,37 @@ import {
     return camera;
   }
   //----------------------------------------------------------
-  
+  function createModel(scene: Scene){
+    // meshes methods
+    // position
+    // rotation = new Vector3(0,2,0)
+
+    // locallyTranslate
+    // addRotation() // local rotate
+    // visibility = 0 - 1
+    // isVisible = flse
+
+    console.log("Loading ...")
+    SceneLoader.ImportMeshAsync("", "./models/", "gladiator.glb", scene).then( result => {
+      console.log(result)
+      const anims = result.animationGroups
+      const meshes = result.meshes
+      meshes[1].isVisible = false
+      meshes[1].parent = null
+      anims[3].play(true)
+
+      setTimeout(() => {
+        anims[1].play()
+      }, 5000) 
+      // const rock3 = result.meshes[1]
+      // rock3.parent = null
+      // result.meshes[0].dispose()
+      // rock3.rotationQuaternion = null
+      // rock3.position = new Vector3(2,0,0)
+      // console.log(rock3.position)
+    })
+  }
+
   //----------------------------------------------------------
   //BOTTOM OF CODE - MAIN RENDERING AREA FOR YOUR SCENE
   export default function createStartScene(engine: Engine) {
@@ -267,7 +311,7 @@ import {
       trees?: SpriteManager;
       //You can uncomment if you wish to have them produced separately
       //box?: Mesh;
-      //roof?: Mesh;
+      roof?: Mesh;
       //BAD PRACTICE in TypeScript but a working solution for the time being.
       house?: any;
       light?: Light;
@@ -281,14 +325,50 @@ import {
     //any further code goes here
     that.terrain = createTerrain(that.scene);
     that.ground = createGround(that.scene);
-    that.skybox = createSkybox(that.scene);
+    // that.skybox = createSkybox(that.scene);
+    createHdrEnvironment(that.scene)
     that.trees = createTrees(that.scene);
 
+    createModel(that.scene)
+
     //housing
-    that.house = cloneHouse(that.scene);
+    // that.house = cloneHouse(that.scene);
     //that.box = createBox(that.scene);
-    //that.roof = createRoof(that.scene);
-    //that.house = createHouse(that.scene, 2); 
+    // that.roof = createRoof(that.scene);
+    // that.house = createHouse(that.scene, 1.7); 
+
+    // let currentHouseNum = 0
+    // let maxHousesNum = 100
+    // while(currentHouseNum <= maxHousesNum){
+    //   const newHouse = that.house.clone("house")
+    //   const radius = 50
+    //   const xPos = Scalar.RandomRange(-radius,radius)
+    //   const zPos = Scalar.RandomRange(-radius,radius)
+    //   newHouse.position = new Vector3(xPos,0,zPos)
+    //   currentHouseNum++
+    // }
+
+    // const negativeX =MeshBuilder.CreateBox("negativX", {size: 1}, that.scene)
+    // negativeX.position = new Vector3(-10, 0,0) //world axis
+
+    // negativeX.addRotation(0,1,0)
+    // negativeX.locallyTranslate(new Vector3(1,0,0))
+    // setInterval(() => {
+    //   negativeX.locallyTranslate(new Vector3(1,0,0))
+    // }, 1000)
+
+    // const possitiveX =MeshBuilder.CreateSphere("negativX", {diameter: 1}, that.scene)
+    // possitiveX.position = new Vector3(1, 0,0) //world axis
+
+    // const possiveZ =MeshBuilder.CreateCapsule("negativX", { }, that.scene)
+    // possiveZ.position = new Vector3(0, 0, 1) //world axis
+
+    
+
+    
+    // const newHouse = that.house.clone("houseOfCell")
+    // newHouse.position = new Vector3(0,3,0)
+
     //const house = Mesh.MergeMeshes([that.box, that.roof], true, false, undefined, false, true);
 
     //Scene Lighting & Camera

@@ -1,4 +1,5 @@
 import { Engine } from "@babylonjs/core";
+import "@babylonjs/loaders"
 import createStartScene from "./createStartScene";
 import './main.css';
 
