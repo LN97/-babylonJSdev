@@ -33,8 +33,27 @@ import {
   } from "@babylonjs/core";
   import HavokPhysics from "@babylonjs/havok";
   import { HavokPlugin, PhysicsAggregate, PhysicsShapeType } from "@babylonjs/core";
+  import * as GUI from "@babylonjs/gui"; 
+
 
   //----------------------------------------------------
+  function createSceneButton(scene: Scene, name: string, index: string, x: string,
+    y: string, advtex){
+     var button = GUI.Button.CreateSimpleButton(name, index);
+     button.left = x;
+     button.top = y;
+     button.width = "160px"
+     button.height = "60px";
+     button.color = "white";
+     button.cornerRadius = 20;
+     button.background = "green";
+     button.onPointerUpObservable.add(function() {
+     console.log("THE BUTTON HAS BEEN CLICKED");
+     });
+     advtex.addControl(button);
+     return button;
+    }
+
   
   //----------------------------------------------------
 
@@ -264,11 +283,13 @@ globalThis.HK = await HavokPhysics();
       hemisphericLight?: HemisphericLight;
       camera?: Camera;
     }
-  
+
     let that: SceneData = { scene: new Scene(engine) };
     that.scene.debugLayer.show();
     that.scene.enablePhysics(new Vector3(0, -9.8, 0), havokPlugin);
 
+    let advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("myUI",true);
+    let button1 = createSceneButton(that.scene, "but1", "Start Game","0px", "-75px", advancedTexture);
 
     //any further code goes here-----------
 
