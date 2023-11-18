@@ -60,7 +60,7 @@ import {
 
     const ground = MeshBuilder.CreateGround("ground", {width:24, height:24});
     ground.material = groundMat;
-    ground.position.y = 0.01;
+    ground.position.y = 0.01; 
     ground.isVisible = false
     return ground;
   }
@@ -92,18 +92,37 @@ import {
     const spriteManagerTrees = new SpriteManager("treesManager", "textures/palmtree.png", 2000, {width: 512, height: 1024}, scene);
 
     //We create trees at random positions
-    for (let i = 0; i < 500; i++) {
-        const tree = new Sprite("tree", spriteManagerTrees);
-        tree.position.x = Math.random() * (-30);
-        tree.position.z = Math.random() * 20 + 8;
-        tree.position.y = 0.5;
-    }
+    // for (let i = 0; i < 500; i++) {
+    //     const tree = new Sprite("tree", spriteManagerTrees);
+    //     tree.position.x = Math.random() * (-30);
+    //     tree.position.z = Math.random() * 20 + 8;
+    //     tree.position.y = 0.5;
+    // }
 
-    for (let i = 0; i < 500; i++) {
-        const tree = new Sprite("tree", spriteManagerTrees);
-        tree.position.x = Math.random() * (25) + 7;
-        tree.position.z = Math.random() * -35  + 8;
-        tree.position.y = 0.5;
+    // for (let i = 0; i < 500; i++) {
+    //     const tree = new Sprite("tree", spriteManagerTrees);
+    //     tree.position.x = Math.random() * (25) + 7;
+    //     tree.position.z = Math.random() * -35  + 8;
+    //     tree.position.y = 0.5;
+    // }
+
+    let toatalTrees = 500
+    let  currentTrees = 0
+
+    while(currentTrees <= toatalTrees){
+      const westTrees = new Sprite("tree", spriteManagerTrees)
+      westTrees.position = new Vector3(Scalar.RandomRange(-25, -30),0.5,Scalar.RandomRange(25, -25))
+
+      const eastTrees = new Sprite("tree", spriteManagerTrees)
+      eastTrees.position = new Vector3(Scalar.RandomRange(15, 30),0.5,Scalar.RandomRange(25, -25))
+
+      const southTrees = new Sprite("tree", spriteManagerTrees)
+      southTrees.position = new Vector3(Scalar.RandomRange(-30, 30),0.5,Scalar.RandomRange(-25, -30))
+      
+      const northTrees = new Sprite("tree", spriteManagerTrees)
+      northTrees.position = new Vector3(Scalar.RandomRange(-30, 30),0.5,Scalar.RandomRange(25, 30))
+      
+      currentTrees += 1
     }
     return spriteManagerTrees;
   }
@@ -329,24 +348,34 @@ import {
     createHdrEnvironment(that.scene)
     that.trees = createTrees(that.scene);
 
-    createModel(that.scene)
+    // createModel(that.scene)
 
     //housing
     // that.house = cloneHouse(that.scene);
     //that.box = createBox(that.scene);
     // that.roof = createRoof(that.scene);
-    // that.house = createHouse(that.scene, 1.7); 
+    that.house = createHouse(that.scene, 1); 
 
-    // let currentHouseNum = 0
-    // let maxHousesNum = 100
-    // while(currentHouseNum <= maxHousesNum){
-    //   const newHouse = that.house.clone("house")
-    //   const radius = 50
-    //   const xPos = Scalar.RandomRange(-radius,radius)
-    //   const zPos = Scalar.RandomRange(-radius,radius)
-    //   newHouse.position = new Vector3(xPos,0,zPos)
-    //   currentHouseNum++
-    // }
+    let currentHouseNum = -20
+    let maxHousesNumPerRow = 10
+    let houseGap = 2
+    while(currentHouseNum <= maxHousesNumPerRow){
+      // if(currentHouseNum <-10) return currentHouseNum+=houseGapifdfsdf
+      const firstRowHouse = that.house.clone("house")
+      const secondRowHouse = that.house.clone("house")
+      const thirdRowHouse = that.house.clone("house")
+      const forthRowHouse = that.house.clone("house")
+      const fithRowHouse = that.house.clone("house")
+
+      firstRowHouse.position = new Vector3(currentHouseNum,0,20)
+      secondRowHouse.position = new Vector3(currentHouseNum,0,10)
+      thirdRowHouse.position = new Vector3(currentHouseNum,0,0)
+      forthRowHouse.position = new Vector3(currentHouseNum,0, -10)
+      fithRowHouse.position = new Vector3(currentHouseNum,0,-20)
+      currentHouseNum+=houseGap
+    }
+
+    that.house.dispose()
 
     // const negativeX =MeshBuilder.CreateBox("negativX", {size: 1}, that.scene)
     // negativeX.position = new Vector3(-10, 0,0) //world axis

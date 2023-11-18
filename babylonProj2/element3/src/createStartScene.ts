@@ -276,10 +276,10 @@ globalThis.HK = await HavokPhysics();
 
  
     //-------------------------------------
-    that.box = createBox(that.scene, that.box, 2, 2, 2);
+    that.box = createBox(that.scene, 2, 2, 1);
     that.ground = createGround(that.scene);
 
-    that.importMesh = importPlayerMesh(that.scene, 0, 0);
+    that.importMesh = importPlayerMesh(that.scene, that.box, 0, 0);
     that.actionManager = actionManager(that.scene);
 
     // that.ground = createGround(that.scene);
