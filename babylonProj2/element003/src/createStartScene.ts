@@ -28,23 +28,27 @@ import {
     ActionManager,
     ExecuteCodeAction,
     AnimationPropertiesOverride,
+    CannonJSPlugin,
+    PhysicsImpostor,
+    Scalar,
   } from "@babylonjs/core";
   import HavokPhysics from "@babylonjs/havok";
   import { HavokPlugin, PhysicsAggregate, PhysicsShapeType } from "@babylonjs/core";
+  import * as CANNON from "cannon"
   //----------------------------------------------------
-  console.log(HavokPhysics)
+  console.log(CANNON)
   //----------------------------------------------------
   // Initialisation of Physics (Havok)
-  let initializedHavok;
-  HavokPhysics().then((havok) => {
-    initializedHavok = havok;
-    console.log(initializedHavok)
-  });
+  // let initializedHavok;
+  // HavokPhysics().then((havok) => {
+  //   initializedHavok = havok;
+  //   console.log(initializedHavok)
+  // });
 
-  const havokInstance = await HavokPhysics();
-  const havokPlugin = new HavokPlugin(true, havokInstance);
+  // const havokInstance = await HavokPhysics();
+  // const havokPlugin = new HavokPlugin(true, havokInstance);
 
-  globalThis.HK = await HavokPhysics();
+  // globalThis.HK = await HavokPhysics();
   //-----------------------------------------------------
 
   //MIDDLE OF CODE - FUNCTIONS
@@ -53,78 +57,96 @@ import {
   let walkingSpeed: number = 0.1;
   let runningSpeed: number = 0.4;
 
-  function importPlayerMesh(scene: Scene, collider: Mesh, x: number, y: number) {
-    let tempItem = { flag: false } 
-    let item: any = SceneLoader.ImportMesh("", "./models/", "dummy3.babylon", scene, function(newMeshes, particleSystems, skeletons) {
-      let mesh = newMeshes[0];
-      let skeleton = skeletons[0];
-      skeleton.animationPropertiesOverride = new AnimationPropertiesOverride();
-      skeleton.animationPropertiesOverride.enableBlending = true;
-      skeleton.animationPropertiesOverride.blendingSpeed = 0.05;
-      skeleton.animationPropertiesOverride.loopMode = 1; 
+  function importPlayerMesh(scene: Scene, collider: Mesh,pos: any) {
+    const Model = SceneLoader.ImportMeshAsync("", "./models/", "gladiator.glb").then( result => {
+      const M = result.meshes
+      const anims = result.animationGroups
+      M[0].position = new Vector3(pos.x, 0, pos.z)
+      console.log(M)
+      console.log(anims)
+      // M[2].showBoundingBox = true
 
-      let walkRange: any = skeleton.getAnimationRange("YBot_Walk");
-      // let runRange: any = skeleton.getAnimationRange("YBot_Run");
-      // let leftRange: any = skeleton.getAnimationRange("YBot_LeftStrafeWalk");
-      // let rightRange: any = skeleton.getAnimationRange("YBot_RightStrafeWalk");
-      // let idleRange: any = skeleton.getAnimationRange("YBot_Idle");
 
-      let animating: boolean = false;
+  const bodyBox = MeshBuilder.CreateBox("bodyBox", {height: 2, size: .8}, scene)
+  bodyBox.isVisible = false
+  bodyBox.physicsImpostor = new PhysicsImpostor(bodyBox, PhysicsImpostor.BoxImpostor, {
+    mass: 0 }, scene )
+    bodyBox.parent = M[0]
+    // bodyBox.visibility = 
+    bodyBox.position.y = 1
+    })
+    // let tempItem = { flag: false } 
+    // let item: any = SceneLoader.ImportMeshAsync("", "./models/", "gladiator.glb", scene, function(newMeshes,  particleSystems, skeletons) {
+    //   let mesh = newMeshes[0];
+    //   let skeleton = skeletons[0];
+    //   let anims = 
+    //   // skeleton.animationPropertiesOverride = new AnimationPropertiesOverride();
+    //   // skeleton.animationPropertiesOverride.enableBlending = true;
+    //   // skeleton.animationPropertiesOverride.blendingSpeed = 0.05;
+    //   // skeleton.animationPropertiesOverride.loopMode = 1; 
 
-      scene.onBeforeRenderObservable.add(()=> {
-        let keydown: boolean = false;
-        let shiftdown: boolean = false;
-        if (keyDownMap["w"] || keyDownMap["ArrowUp"]) {
-          mesh.position.z += 0.1;
-          mesh.rotation.y = 0;
-          keydown = true;
-        }
-        if (keyDownMap["a"] || keyDownMap["ArrowLeft"]) {
-          mesh.position.x -= 0.1;
-          mesh.rotation.y = 3 * Math.PI / 2;
-          keydown = true;
-        }
-        if (keyDownMap["s"] || keyDownMap["ArrowDown"]) {
-          mesh.position.z -= 0.1;
-          mesh.rotation.y = 2 * Math.PI / 2;
-          keydown = true;
-        }
-        if (keyDownMap["d"] || keyDownMap["ArrowRight"]) {
-          mesh.position.x += 0.1;
-          mesh.rotation.y = Math.PI / 2;
-          keydown = true;
-        }
-        if (keyDownMap["Shift"] || keyDownMap["LeftShift"]) {
-          currentSpeed = runningSpeed;
-          shiftdown = true;
-        } else {
-          currentSpeed = walkingSpeed;
-          shiftdown = false;
-        }
+    //   // let walkRange: any = skeleton.getAnimationRange("YBot_Walk");
+    //   // let runRange: any = skeleton.getAnimationRange("YBot_Run");
+    //   // let leftRange: any = skeleton.getAnimationRange("YBot_LeftStrafeWalk");
+    //   // let rightRange: any = skeleton.getAnimationRange("YBot_RightStrafeWalk");
+    //   // let idleRange: any = skeleton.getAnimationRange("YBot_Idle");
 
-        if (keydown) {
-          if (!animating) {
-            animating = true;
-            scene.beginAnimation(skeleton, walkRange.from, walkRange.to, true);
-          }
-        } else {
-          animating = false;
-          scene.stopAnimation(skeleton);
-        }
+    //   // let animating: boolean = false;
 
-        //collision
-        if (mesh.intersectsMesh(collider)) {
-          console.log("COLLIDED");
-        }
-      });
+    //   // scene.onBeforeRenderObservable.add(()=> {
+    //   //   let keydown: boolean = false;
+    //   //   let shiftdown: boolean = false;
+    //   //   if (keyDownMap["w"] || keyDownMap["ArrowUp"]) {
+    //   //     mesh.position.z += 0.1;
+    //   //     mesh.rotation.y = 0;
+    //   //     keydown = true;
+    //   //   }
+    //   //   if (keyDownMap["a"] || keyDownMap["ArrowLeft"]) {
+    //   //     mesh.position.x -= 0.1;
+    //   //     mesh.rotation.y = 3 * Math.PI / 2;
+    //   //     keydown = true;
+    //   //   }
+    //   //   if (keyDownMap["s"] || keyDownMap["ArrowDown"]) {
+    //   //     mesh.position.z -= 0.1;
+    //   //     mesh.rotation.y = 2 * Math.PI / 2;
+    //   //     keydown = true;
+    //   //   }
+    //   //   if (keyDownMap["d"] || keyDownMap["ArrowRight"]) {
+    //   //     mesh.position.x += 0.1;
+    //   //     mesh.rotation.y = Math.PI / 2;
+    //   //     keydown = true;
+    //   //   }
+    //   //   if (keyDownMap["Shift"] || keyDownMap["LeftShift"]) {
+    //   //     currentSpeed = runningSpeed;
+    //   //     shiftdown = true;
+    //   //   } else {
+    //   //     currentSpeed = walkingSpeed;
+    //   //     shiftdown = false;
+    //   //   }
 
-      //physics collision
-      item = mesh;
-      let playerAggregate = new PhysicsAggregate(item, PhysicsShapeType.CAPSULE, { mass: 0 }, scene);
-      playerAggregate.body.disablePreStep = false;
+    //   //   if (keydown) {
+    //   //     if (!animating) {
+    //   //       animating = true;
+    //   //       scene.beginAnimation(skeleton, walkRange.from, walkRange.to, true);
+    //   //     }
+    //   //   } else {
+    //   //     animating = false;
+    //   //     scene.stopAnimation(skeleton);
+    //   //   }
 
-    });
-    return item;
+    //   //   //collision
+    //   //   if (mesh.intersectsMesh(collider)) {
+    //   //     console.log("COLLIDED");
+    //   //   }
+    //   // });
+
+    //   // //physics collision
+    //   // item = mesh;
+    //   // let playerAggregate = new PhysicsAggregate(item, PhysicsShapeType.CAPSULE, { mass: 0 }, scene);
+    //   // playerAggregate.body.disablePreStep = false;
+
+    // });
+
   }
 
   function actionManager(scene: Scene){
@@ -266,15 +288,40 @@ import {
     // that.scene.debugLayer.show();
     //initialise physics
     
-    // that.scene.enablePhysics(new Vector3(0, -9.8, 0), havokPlugin);
+    that.scene.enablePhysics(new Vector3(0, -9.8, 0), new CannonJSPlugin(true, 10, CANNON));
     //----------------------------------------------------------
+    const ground = MeshBuilder.CreateGround("ground",{height: 10, width: 10}, that.scene)
+    ground.physicsImpostor = new PhysicsImpostor(ground , PhysicsImpostor.BoxImpostor,
+    { mass: 0,  friction: 0, restitution: 2 })
+
+    const box= MeshBuilder.CreateBox("box",{size: 1}, that.scene)
+
+    setInterval(() => {
+      const sphere= MeshBuilder.CreateSphere("box",{diameter: .5}, that.scene)
+      sphere.position = new Vector3(Scalar.RandomRange(-5,5), 5, Scalar.RandomRange(-5,5))
+      sphere.physicsImpostor = new PhysicsImpostor(sphere , PhysicsImpostor.BoxImpostor,
+        { mass: 1,  friction: 0, restitution: .5 })
+
+        if (sphere.intersectsMesh(ground)) {
+                console.log("COLLIDED");
+              }
+      setTimeout(() => sphere.dispose(), 3000)
+    }, 500)
+
+    setTimeout(() => {
+      box.physicsImpostor = new PhysicsImpostor(box , PhysicsImpostor.BoxImpostor,
+        { mass: 1,  friction: 0, restitution: .5 })
+    }, 4000);
+
+    box.position.y = 4
 
     //any further code goes here-----------
     // that.box = createBox(that.scene, 2, 2, 2);
     // that.ground = createGround(that.scene);
 
-    // that.importMesh = importPlayerMesh(that.scene, that.box, 0, 0);
+    importPlayerMesh(that.scene, box, {x: 1, z: 2});
     // that.actionManager = actionManager(that.scene);
+    importPlayerMesh(that.scene, box, {x: 1, z: -2});
 
     that.skybox = createSkybox(that.scene);
     //Scene Lighting & Camera
