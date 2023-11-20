@@ -1,6 +1,6 @@
 //-----------------------------------------------------
 //TOP OF CODE - IMPORTING BABYLONJS
-import "@babylonjs/core/Debug/debugLayer";
+
 import "@babylonjs/inspector";
 
 
@@ -41,14 +41,14 @@ import {
   // initialisation of phsyics
   let initializedHavok;
 
-HavokPhysics().then((havok) => {
- initializedHavok = havok;
-});
+// HavokPhysics().then((havok) => {
+//  initializedHavok = havok;
+// });
 
-const havokInstance = await HavokPhysics();
-const havokPlugin = new HavokPlugin(true, havokInstance);
+// const havokInstance = await HavokPhysics();
+// const havokPlugin = new HavokPlugin(true, havokInstance);
 
-globalThis.HK = await HavokPhysics();
+// globalThis.HK = await HavokPhysics();
 
 
   //MIDDLE OF CODE - FUNCTIONS
@@ -266,21 +266,19 @@ globalThis.HK = await HavokPhysics();
     }
   
     let that: SceneData = { scene: new Scene(engine) };
-    that.scene.debugLayer.show();
-    that.scene.enablePhysics(new Vector3(0, -9.8, 0), havokPlugin);
+
+    // that.scene.enablePhysics(new Vector3(0, -9.8, 0), havokPlugin);
 
 
     //any further code goes here-----------
 
-
-
  
-    //-------------------------------------
-    that.box = createBox(that.scene, 2, 2, 1);
-    that.ground = createGround(that.scene);
+    // //-------------------------------------
+    // that.box = createBox(that.scene, 2, 2, 1);
+    // that.ground = createGround(that.scene);
 
-    that.importMesh = importPlayerMesh(that.scene, that.box, 0, 0);
-    that.actionManager = actionManager(that.scene);
+    // that.importMesh = importPlayerMesh(that.scene, that.box, 0, 0);
+    // that.actionManager = actionManager(that.scene);
 
     // that.ground = createGround(that.scene);
     that.skybox = createSkybox(that.scene);
