@@ -61,20 +61,61 @@ import {
     const Model = SceneLoader.ImportMeshAsync("", "./models/", "gladiator.glb").then( result => {
       const M = result.meshes
       const anims = result.animationGroups
-      M[0].position = new Vector3(pos.x, 0, pos.z)
       console.log(M)
       console.log(anims)
       // M[2].showBoundingBox = true
 
 
-  const bodyBox = MeshBuilder.CreateBox("bodyBox", {height: 2, size: .8}, scene)
-  bodyBox.isVisible = false
-  bodyBox.physicsImpostor = new PhysicsImpostor(bodyBox, PhysicsImpostor.BoxImpostor, {
-    mass: 0 }, scene )
-    bodyBox.parent = M[0]
-    // bodyBox.visibility = 
-    bodyBox.position.y = 1
+      const bodyBox = MeshBuilder.CreateBox("bodyBox", {height: 2, size: .8}, scene)
+      bodyBox.isVisible = false
+      bodyBox.visibility = 0
+      bodyBox.physicsImpostor = new PhysicsImpostor(bodyBox, PhysicsImpostor.BoxImpostor, {
+        mass: 0 }, scene )
+
+      M[0].parent = bodyBox
+      M[0].position = new Vector3(0,-1,0)
+
+      // bodyBox.visibility = 
+      const {x,z} = pos
+      bodyBox.position = new Vector3(x, 1, z)
+
+      // registered the box physics
+      collider.physicsImpostor = new PhysicsImpostor(collider , PhysicsImpostor.BoxImpostor,
+        { mass: 1,  friction: 0, restitution: .5 })
+      
+        
+      actionManagerIntersect(scene, bodyBox, collider)
+
+      window.addEventListener("keydown", e => {
+          if(e.key === "w"){
+            bodyBox.locallyTranslate(new Vector3(0,0,.25))
+            anims.forEach(anim => anim.name ==="running" && anim.play(true))
+          }
+          if(e.key === "s"){
+            bodyBox.locallyTranslate(new Vector3(0,0,-.25))
+            anims.forEach(anim => anim.name ==="running" && anim.play(true))
+          }
+          if(e.key === "a"){
+            bodyBox.locallyTranslate(new Vector3(-.25,0,0))
+            anims.forEach(anim => anim.name ==="running" && anim.play(true))
+          }
+          if(e.key === "d"){
+            bodyBox.locallyTranslate(new Vector3(.25,0, 0))
+            anims.forEach(anim => anim.name ==="running" && anim.play(true))
+          }
+      })
+
+      // window.addEventListener("keyup", e => {
+      //   if(e.key ==="u") collider.position.y += 1
+      // })
+
+      // scene.registerAfterRender(() => {
+      //   if(bodyBox.intersectsMesh(M[2])){
+      //     console.log("we are hit by a box")
+      //   }
+      // })
     })
+   
     // let tempItem = { flag: false } 
     // let item: any = SceneLoader.ImportMeshAsync("", "./models/", "gladiator.glb", scene, function(newMeshes,  particleSystems, skeletons) {
     //   let mesh = newMeshes[0];
@@ -93,46 +134,46 @@ import {
 
     //   // let animating: boolean = false;
 
-    //   // scene.onBeforeRenderObservable.add(()=> {
-    //   //   let keydown: boolean = false;
-    //   //   let shiftdown: boolean = false;
-    //   //   if (keyDownMap["w"] || keyDownMap["ArrowUp"]) {
-    //   //     mesh.position.z += 0.1;
-    //   //     mesh.rotation.y = 0;
-    //   //     keydown = true;
-    //   //   }
-    //   //   if (keyDownMap["a"] || keyDownMap["ArrowLeft"]) {
-    //   //     mesh.position.x -= 0.1;
-    //   //     mesh.rotation.y = 3 * Math.PI / 2;
-    //   //     keydown = true;
-    //   //   }
-    //   //   if (keyDownMap["s"] || keyDownMap["ArrowDown"]) {
-    //   //     mesh.position.z -= 0.1;
-    //   //     mesh.rotation.y = 2 * Math.PI / 2;
-    //   //     keydown = true;
-    //   //   }
-    //   //   if (keyDownMap["d"] || keyDownMap["ArrowRight"]) {
-    //   //     mesh.position.x += 0.1;
-    //   //     mesh.rotation.y = Math.PI / 2;
-    //   //     keydown = true;
-    //   //   }
-    //   //   if (keyDownMap["Shift"] || keyDownMap["LeftShift"]) {
-    //   //     currentSpeed = runningSpeed;
-    //   //     shiftdown = true;
-    //   //   } else {
-    //   //     currentSpeed = walkingSpeed;
-    //   //     shiftdown = false;
-    //   //   }
+      // scene.onBeforeRenderObservable.add(()=> {
+      //   let keydown: boolean = false;
+      //   let shiftdown: boolean = false;
+      //   if (keyDownMap["w"] || keyDownMap["ArrowUp"]) {
+      //     mesh.position.z += 0.1;
+      //     mesh.rotation.y = 0;
+      //     keydown = true;
+      //   }
+      //   if (keyDownMap["a"] || keyDownMap["ArrowLeft"]) {
+      //     mesh.position.x -= 0.1;
+      //     mesh.rotation.y = 3 * Math.PI / 2;
+      //     keydown = true;
+      //   }
+      //   if (keyDownMap["s"] || keyDownMap["ArrowDown"]) {
+      //     mesh.position.z -= 0.1;
+      //     mesh.rotation.y = 2 * Math.PI / 2;
+      //     keydown = true;
+      //   }
+      //   if (keyDownMap["d"] || keyDownMap["ArrowRight"]) {
+      //     mesh.position.x += 0.1;
+      //     mesh.rotation.y = Math.PI / 2;
+      //     keydown = true;
+      //   }
+      //   if (keyDownMap["Shift"] || keyDownMap["LeftShift"]) {
+      //     currentSpeed = runningSpeed;
+      //     shiftdown = true;
+      //   } else {
+      //     currentSpeed = walkingSpeed;
+      //     shiftdown = false;
+      //   }
 
-    //   //   if (keydown) {
-    //   //     if (!animating) {
-    //   //       animating = true;
-    //   //       scene.beginAnimation(skeleton, walkRange.from, walkRange.to, true);
-    //   //     }
-    //   //   } else {
-    //   //     animating = false;
-    //   //     scene.stopAnimation(skeleton);
-    //   //   }
+      //   if (keydown) {
+      //     if (!animating) {
+      //       animating = true;
+      //       scene.beginAnimation(skeleton, walkRange.from, walkRange.to, true);
+      //     }
+      //   } else {
+      //     animating = false;
+      //     scene.stopAnimation(skeleton);
+      //   }
 
     //   //   //collision
     //   //   if (mesh.intersectsMesh(collider)) {
@@ -148,6 +189,33 @@ import {
     // });
 
   }
+
+  function actionManagerIntersect(scene: Scene, mainMesh: any, toCollideWith: Mesh){
+    mainMesh.actionManager = new ActionManager(scene);
+
+    mainMesh.actionManager.registerAction(
+      new ExecuteCodeAction(
+        {
+          trigger: ActionManager.OnIntersectionEnterTrigger,
+          parameter: toCollideWith
+        },
+        function(evt) {
+          console.log("successfully collided")
+        }
+      )
+    );
+    mainMesh.actionManager.registerAction(
+      new ExecuteCodeAction(
+        {
+          trigger: ActionManager.OnIntersectionExitTrigger,
+          parameter: toCollideWith
+        },
+        function(evt) {
+          console.log("successfully UN-COLLIDED")
+        }
+      )
+    );
+  } 
 
   function actionManager(scene: Scene){
     scene.actionManager = new ActionManager(scene);
@@ -290,11 +358,12 @@ import {
     
     that.scene.enablePhysics(new Vector3(0, -9.8, 0), new CannonJSPlugin(true, 10, CANNON));
     //----------------------------------------------------------
-    const ground = MeshBuilder.CreateGround("ground",{height: 10, width: 10}, that.scene)
+    const ground = MeshBuilder.CreateGround("ground",{height: 25, width: 25}, that.scene)
     ground.physicsImpostor = new PhysicsImpostor(ground , PhysicsImpostor.BoxImpostor,
     { mass: 0,  friction: 0, restitution: 2 })
 
     const box= MeshBuilder.CreateBox("box",{size: 1}, that.scene)
+    box.position = new Vector3(0,1.5,-4)
 
     setInterval(() => {
       const sphere= MeshBuilder.CreateSphere("box",{diameter: .5}, that.scene)
@@ -302,26 +371,23 @@ import {
       sphere.physicsImpostor = new PhysicsImpostor(sphere , PhysicsImpostor.BoxImpostor,
         { mass: 1,  friction: 0, restitution: .5 })
 
-        if (sphere.intersectsMesh(ground)) {
-                console.log("COLLIDED");
-              }
-      setTimeout(() => sphere.dispose(), 3000)
-    }, 500)
+        if (sphere.intersectsMesh(ground), true) {
+          console.log("COLLIDED");
+        }
+      setTimeout(() => sphere.dispose(), 10000)
+    }, 100)
 
-    setTimeout(() => {
-      box.physicsImpostor = new PhysicsImpostor(box , PhysicsImpostor.BoxImpostor,
-        { mass: 1,  friction: 0, restitution: .5 })
-    }, 4000);
-
-    box.position.y = 4
+    // setTimeout(() => {
+     
+    // }, 4000);
 
     //any further code goes here-----------
     // that.box = createBox(that.scene, 2, 2, 2);
     // that.ground = createGround(that.scene);
 
-    importPlayerMesh(that.scene, box, {x: 1, z: 2});
+    importPlayerMesh(that.scene, box, {x: 0, z: 0})
     // that.actionManager = actionManager(that.scene);
-    importPlayerMesh(that.scene, box, {x: 1, z: -2});
+    // importPlayerMesh(that.scene, box, {x: 1, z: -2});
 
     that.skybox = createSkybox(that.scene);
     //Scene Lighting & Camera
