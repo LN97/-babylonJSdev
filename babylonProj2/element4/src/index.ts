@@ -11,7 +11,11 @@ canvas.classList.add("background-canvas");
 document.body.appendChild(canvas);
 
 let eng = new Engine(canvas, true, {}, true);
+if ( Engine.audioEngine) {
+    Engine.audioEngine.useCustomUnlockedButton = true
+  }
 let startScene = createStartScene(eng);
+window.addEventListener("resize", ()=> eng.resize())
 eng.runRenderLoop(() => {
     startScene.scene.render();
 });                  
