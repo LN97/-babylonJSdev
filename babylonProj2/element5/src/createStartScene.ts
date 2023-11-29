@@ -33,62 +33,73 @@ import {
     PhysicsImpostor,
     Scalar,
   } from "@babylonjs/core";
-  import HavokPhysics from "@babylonjs/havok";
-  import { HavokPlugin, PhysicsAggregate, PhysicsShapeType } from "@babylonjs/core";
+  import { PhysicsAggregate, PhysicsShapeType } from "@babylonjs/core";
   import * as CANNON from "cannon"
   //----------------------------------------------------
   console.log(CANNON)
-  //----------------------------------------------------
-  // Initialisation of Physics (Havok)
-  // let initializedHavok;
-  // HavokPhysics().then((havok) => {
-  //   initializedHavok = havok;
-  //   console.log(initializedHavok)
-  // });
-
-  // const havokInstance = await HavokPhysics();
-  // const havokPlugin = new HavokPlugin(true, havokInstance);
-
-  // globalThis.HK = await HavokPhysics();
+ 
   //-----------------------------------------------------
 
   //MIDDLE OF CODE - FUNCTIONS
+
+  // initialising movement varaibles and animations
+
   let runningSpeed: any = .1
   let isMoving: Boolean = false
   let gamgeGround: any = undefined 
   let anims: any
   let blocks: any[] = []
 
+   
+  function createArcRotateCamera(scene: Scene) {
+    let camAlpha = -Math.PI / 2,
+      camBeta = Math.PI / 2.5,
+      camDist = 10,
+      camTarget = new Vector3(0, 0, 0);
+    let camera = new ArcRotateCamera(
+      "camera1",
+      camAlpha,
+      camBeta,
+      camDist,
+      camTarget,
+      scene,
+    );
+    // camera.attachControl(true);
+    return camera;
+  }
+
+  // Importing galdiater model
+
   function importPlayerMesh(scene: Scene,pos: any) {
 
     
-    const Model = SceneLoader.ImportMeshAsync("", "./models/", "gladiator.glb").then( result => {
+    SceneLoader.ImportMeshAsync("", "./models/", "gladiator.glb").then( result => {
       const M = result.meshes
       anims = result.animationGroups
       console.log(M)
       console.log(anims)
-      // M[2].showBoundingBox = true
 
-
+      // container for model mesh
       const bodyBox = MeshBuilder.CreateBox("bodyBox", {height: 2, size: .8}, scene)
       bodyBox.isVisible = false
       bodyBox.visibility = 0
       bodyBox.physicsImpostor = new PhysicsImpostor(bodyBox, PhysicsImpostor.BoxImpostor, {
         mass: 0 }, scene )
 
+
+      // root control for mesh
       M[0].parent = bodyBox
       M[0].position = new Vector3(0,-1,0)
 
-      // bodyBox.visibility = 
       const {x,z} = pos
       bodyBox.position = new Vector3(x, 1, z)
 
       // registered the box physics
-    
+      // movement for the model 
 
       window.addEventListener("keydown", e => {
           if(e.key === "a"){
-           
+           bodyBox.locallyTranslate(new Vector3(-.25,0, 0))
             anims.forEach(anim => anim.name ==="running" && anim.play(true))
           }
           if(e.key === "d"){
@@ -96,22 +107,16 @@ import {
             anims.forEach(anim => anim.name ==="running" && anim.play(true))
           }
       })
-      window.addEventListener("keydown", e => {
 
-        if(e.key === "a"){
-          bodyBox.locallyTranslate(new Vector3(-.25,0,0))
-          anims.forEach(anim => anim.name ==="running" && anim.play(true))
-        }
-        if(e.key === "d"){
-          bodyBox.locallyTranslate(new Vector3(.25,0, 0))
-          anims.forEach(anim => anim.name ==="running" && anim.play(true))
-        }
-      })
 
       scene.registerAfterRender(() => {
-        //runs 60times per second
+
+        //runs 60 times per second while rendering 
+
+        // ground moves backwards infinetly if player is moving 
+
         if(isMoving && gamgeGround)  {
-          
+         
           gamgeGround.locallyTranslate(new Vector3(0,0,-runningSpeed))
           if(gamgeGround.position.z < -50) gamgeGround.position.z = 0
 
@@ -122,10 +127,11 @@ import {
       initInfiniteBlocks(scene, bodyBox)
 
     })
-   
 
 
+    
   }
+  // manages the action when meshs collide
 
   function actionManagerIntersect(scene: Scene, mainMesh: any, toCollideWith: Mesh, callback){
     mainMesh.actionManager = new ActionManager(scene);
@@ -156,20 +162,6 @@ import {
 
 
 
-  function createBox(scene: Scene, x: number, y: number, z: number) {
-    let box: Mesh = MeshBuilder.CreateBox("box", { });
-    box.position.x = x;
-    box.position.y = y;
-    box.position.z = z;
-    const boxAggregate = new PhysicsAggregate(box, PhysicsShapeType.BOX, { mass: 1 }, scene);
-    return box;
-  }
-    
-  function createGround(scene: Scene) {
-    const ground: Mesh = MeshBuilder.CreateGround("ground", {height: 10, width: 10, subdivisions: 4});
-    const groundAggregate = new PhysicsAggregate(ground, PhysicsShapeType.BOX, { mass: 0, friction:1 }, scene);
-    return ground;
-  }
 
   //----------------------------------------------------------------------------------------------
    //Create Skybox
@@ -186,7 +178,7 @@ import {
     return skybox;
   }
 
-    //Create Skybox
+    //Create HDR skybox
     function createHdrEnvironment(scene: Scene) {
       let hdrTexture = CubeTexture.CreateFromPrefilteredData("./textures/environment.env", scene)
 
@@ -194,34 +186,7 @@ import {
 
     }
 
-
-
-  function createAnyLight(scene: Scene, index: number, px: number, py: number, pz: number, colX: number, colY: number, colZ: number, mesh: Mesh) {
-    // only spotlight, point and directional can cast shadows in BabylonJS
-    switch (index) {
-      case 1: //hemispheric light
-        const hemiLight = new HemisphericLight("hemiLight", new Vector3(px, py, pz), scene);
-        hemiLight.intensity = 0.1;
-        return hemiLight;
-        break;
-      case 2: //spot light
-        const spotLight = new SpotLight("spotLight", new Vector3(px, py, pz), new Vector3(0, -1, 0), Math.PI / 3, 10, scene);
-        spotLight.diffuse = new Color3(colX, colY, colZ); //0.39, 0.44, 0.91
-        let shadowGenerator = new ShadowGenerator(1024, spotLight);
-        shadowGenerator.addShadowCaster(mesh);
-        shadowGenerator.useExponentialShadowMap = true;
-        return spotLight;
-        break;
-      case 3: //point light
-        const pointLight = new PointLight("pointLight", new Vector3(px, py, pz), scene);
-        pointLight.diffuse = new Color3(colX, colY, colZ); //0.39, 0.44, 0.91
-        shadowGenerator = new ShadowGenerator(1024, pointLight);
-        shadowGenerator.addShadowCaster(mesh);
-        shadowGenerator.useExponentialShadowMap = true;
-        return pointLight;
-        break;
-    }
-  }
+    // creates hemispheric light
  
   function createHemiLight(scene: Scene) {
     const light = new HemisphericLight("light", new Vector3(0, 1, 0), scene);
@@ -229,40 +194,10 @@ import {
     return light;
   }
 
-  //PREVIOUS METHODS
-  // function createSpotLight(scene: Scene, px: number, py: number, pz: number) {
-  //   var light = new SpotLight("spotLight", new Vector3(-1, 1, -1), new Vector3(0, -1, 0), Math.PI / 2, 10, scene);
-  //   light.diffuse = new Color3(0.39, 0.44, 0.91);
-	//   light.specular = new Color3(0.22, 0.31, 0.79);
-  //   return light;
-  // }
-  
-  function createArcRotateCamera(scene: Scene) {
-    let camAlpha = -Math.PI / 2,
-      camBeta = Math.PI / 2.5,
-      camDist = 10,
-      camTarget = new Vector3(0, 0, 0);
-    let camera = new ArcRotateCamera(
-      "camera1",
-      camAlpha,
-      camBeta,
-      camDist,
-      camTarget,
-      scene,
-    );
-    // camera.attachControl(true);
-    return camera;
-  }
-  //----------------------------------------------------------
-  
-  function initializePhysicss(scene: Scene){
-    // const havokInstacnce = HavokPhysics()
-
-    
-
-  }
   //----------------------------------------------------------
   //BOTTOM OF CODE - MAIN RENDERING AREA FOR YOUR SCENE
+
+  // typescript template 
   export default function createStartScene(engine: Engine) {
     interface SceneData {
       scene: Scene;
@@ -277,9 +212,8 @@ import {
     }
   
     let that: SceneData = { scene: new Scene(engine) };
-    // that.scene.debugLayer.show();
-    //initialise physics
-    
+
+    // enabels physics 
     that.scene.enablePhysics(new Vector3(0, -9.8, 0), new CannonJSPlugin(true, 10, CANNON));
     //----------------------------------------------------------
     const ground = MeshBuilder.CreateGround("ground",{height: 200, width: 50}, that.scene)
@@ -303,8 +237,23 @@ import {
     importPlayerMesh(that.scene, {x: 0, z: 0})
 
     const ui = GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI")
-
-    const startBtn = createSceneButton(that.scene, "startBtn", "start", "40", 30, ui)
+    let stopBtn
+    const startBtn = createSceneButton(that.scene, "startBtn", "start", "40", 30, ui, () => {
+      isMoving = !isMoving
+      anims.forEach(anim => {
+        isMoving ? anim.name ==="running" && anim.play(true) :  anim.name ==="running" && anim.stop() 
+      })
+      startBtn.isVisible = false
+      stopBtn.isVisible = true
+    }, true)
+    stopBtn = createSceneButton(that.scene, "stopBtn", "stop", "40", 30, ui, () => {
+      isMoving = !isMoving
+      anims.forEach(anim => {
+        isMoving ? anim.name ==="running" && anim.play(true) :  anim.name ==="running" && anim.stop() 
+      })
+      startBtn.isVisible = true
+      stopBtn.isVisible = false
+    }, false)
 
     createHdrEnvironment(that.scene)
     //Scene Lighting & Camera
@@ -318,7 +267,7 @@ import {
 
   // createbuttons
   function createSceneButton(scene: Scene, name: string, text: string, x: string,
-    y: number, screenUiContainer){
+    y: number, screenUiContainer, callback, isVisible){
      var button = GUI.Button.CreateSimpleButton(name, text);
      button.top= `${y}%`
      button.left = x;
@@ -329,11 +278,10 @@ import {
      button.cornerRadius = 10;
      button.background = "green";
      button.onPointerUpObservable.add(function() {
-        isMoving = !isMoving
-        anims.forEach(anim => {
-          isMoving ? anim.name ==="running" && anim.play(true) :  anim.name ==="running" && anim.stop() 
-        })
+       callback()
      });
+
+     button.isVisible = isVisible
      screenUiContainer.addControl(button);
      return button;
 
@@ -348,12 +296,12 @@ import {
     setInterval(() => {
         if(!isMoving) return 
         const meshId = Math.random().toLocaleString()
-        const cylinder = MeshBuilder.CreateCylinder("cylinder", { diameter: 1.8, height: 2 }, scene);
+        const cylinder = MeshBuilder.CreateCylinder("cylinder", { diameter: 1.8, height: 10 }, scene);
         cylinder.id = meshId
         cylinder.position = new Vector3(
           // always half of the height 
             Scalar.RandomRange(-10, 10),
-            1,
+            5,
             Scalar.RandomRange(15, 20)
         );
 

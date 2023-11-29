@@ -39,7 +39,10 @@ import {
   import * as CANNON from "cannon"
   //----------------------------------------------------
 
+// your website name
+// changw when uploaded
 
+let urlName = "http://127.0.0.1:5173"
   //----------------------------------------------------
 
   //-----------------------------------------------------
@@ -410,7 +413,7 @@ import {
       sound.play()
       setTimeout(() => {
 
-            window.location.replace(`http://127.0.0.1:5173/element${elementNumber}/`)
+            window.location.replace(`${urlName}/element${elementNumber}/`)
        
       }, 1000);
    
