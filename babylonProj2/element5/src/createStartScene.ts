@@ -236,6 +236,8 @@ import {
 
     importPlayerMesh(that.scene, {x: 0, z: 0})
 
+    //  creating a simple user interface (UI) with start and stop buttons for controlling animations
+
     const ui = GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI")
     let stopBtn
     const startBtn = createSceneButton(that.scene, "startBtn", "start", "40", 30, ui, () => {
@@ -293,6 +295,7 @@ import {
   function initInfiniteBlocks(scene, characterBody){
     const cylindertexture = new Texture("https://dl.polyhaven.org/file/ph-assets/Textures/jpg/4k/factory_wall/factory_wall_diff_4k.jpg", scene);
 
+    // that creates a repeating pattern of cylinders
     setInterval(() => {
         if(!isMoving) return 
         const meshId = Math.random().toLocaleString()
@@ -319,12 +322,17 @@ import {
             { mass: 1, friction: 1, restitution: 0.5 },
             scene
         );
-        // cylinder.physicsImpostor.setLinearVelocity(new Vector3(0,0,-.3))
+        //adds the newly created cylinder to an array named blocks
         blocks.push(cylinder)
 
+
+        // handles interactions or collisions between the cylindersand model
         actionManagerIntersect(scene, cylinder, characterBody, () => {
           alert("Game Over")
         })
+
+        //It removes the cylinder from the blocks array using the filter method. 
+        //The condition blck.id !== meshId ensures that only the cylinder with the specified meshId is removed.
     
         setTimeout(() => {
           blocks = blocks.filter(blck => blck.id !== meshId)
