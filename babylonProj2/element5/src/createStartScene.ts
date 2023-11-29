@@ -57,6 +57,7 @@ import {
   let isMoving: Boolean = false
   let gamgeGround: any = undefined 
   let anims: any
+  let blocks: any[] = []
 
   function importPlayerMesh(scene: Scene,pos: any) {
 
@@ -108,11 +109,17 @@ import {
       })
 
       scene.registerAfterRender(() => {
+        //runs 60times per second
         if(isMoving && gamgeGround)  {
           
           gamgeGround.locallyTranslate(new Vector3(0,0,-runningSpeed))
+          if(gamgeGround.position.z < -50) gamgeGround.position.z = 0
+
+          blocks.length && blocks.forEach(blck =>blck.locallyTranslate(new Vector3(0,0,-runningSpeed) )) 
         }
+        
       })
+      initInfiniteBlocks(scene, bodyBox)
 
     })
    
@@ -120,7 +127,7 @@ import {
 
   }
 
-  function actionManagerIntersect(scene: Scene, mainMesh: any, toCollideWith: Mesh){
+  function actionManagerIntersect(scene: Scene, mainMesh: any, toCollideWith: Mesh, callback){
     mainMesh.actionManager = new ActionManager(scene);
 
     mainMesh.actionManager.registerAction(
@@ -130,7 +137,7 @@ import {
           parameter: toCollideWith
         },
         function(evt) {
-          console.log("successfully collided")
+          callback()
         }
       )
     );
@@ -160,7 +167,7 @@ import {
     
   function createGround(scene: Scene) {
     const ground: Mesh = MeshBuilder.CreateGround("ground", {height: 10, width: 10, subdivisions: 4});
-    const groundAggregate = new PhysicsAggregate(ground, PhysicsShapeType.BOX, { mass: 0 }, scene);
+    const groundAggregate = new PhysicsAggregate(ground, PhysicsShapeType.BOX, { mass: 0, friction:1 }, scene);
     return ground;
   }
 
@@ -275,7 +282,7 @@ import {
     
     that.scene.enablePhysics(new Vector3(0, -9.8, 0), new CannonJSPlugin(true, 10, CANNON));
     //----------------------------------------------------------
-    const ground = MeshBuilder.CreateGround("ground",{height: 500, width: 50}, that.scene)
+    const ground = MeshBuilder.CreateGround("ground",{height: 200, width: 50}, that.scene)
 
     //pasted ground mat
     const groundMat = new StandardMaterial("groundMat")
@@ -288,10 +295,10 @@ import {
     ground.physicsImpostor = new PhysicsImpostor(ground , PhysicsImpostor.BoxImpostor,
     { mass: 0,  friction: 0, restitution: 2 })
     gamgeGround = ground
-    diffuseTex.uScale = 80
-    diffuseTex.vScale = 50
-    bumpTex.uScale = 80
-    bumpTex.vScale = 50
+    diffuseTex.uScale = 15
+    diffuseTex.vScale = 40
+    bumpTex.uScale = 15
+    bumpTex.vScale = 40
 
     importPlayerMesh(that.scene, {x: 0, z: 0})
 
@@ -304,7 +311,8 @@ import {
     that.hemisphericLight = createHemiLight(that.scene);
     that.camera = createArcRotateCamera(that.scene);
 
-    return that;
+
+    return that;    
   }
   //----------------------------------------------------
 
@@ -328,4 +336,52 @@ import {
      });
      screenUiContainer.addControl(button);
      return button;
+
+    
+
     }
+
+  // initialization for blocks
+  function initInfiniteBlocks(scene, characterBody){
+    const cylindertexture = new Texture("https://dl.polyhaven.org/file/ph-assets/Textures/jpg/4k/factory_wall/factory_wall_diff_4k.jpg", scene);
+
+    setInterval(() => {
+        if(!isMoving) return 
+        const meshId = Math.random().toLocaleString()
+        const cylinder = MeshBuilder.CreateCylinder("cylinder", { diameter: 1.8, height: 2 }, scene);
+        cylinder.id = meshId
+        cylinder.position = new Vector3(
+          // always half of the height 
+            Scalar.RandomRange(-10, 10),
+            1,
+            Scalar.RandomRange(15, 20)
+        );
+
+        // Creating a material and assigning the texture to it
+         const material = new StandardMaterial("cylinderMaterial", scene);
+        
+         material.diffuseTexture = cylindertexture;
+
+          // Applying the material to the cylinder
+         cylinder.material = material;
+    
+        cylinder.physicsImpostor = new PhysicsImpostor(
+            cylinder,
+            PhysicsImpostor.CylinderImpostor,
+            { mass: 1, friction: 1, restitution: 0.5 },
+            scene
+        );
+        // cylinder.physicsImpostor.setLinearVelocity(new Vector3(0,0,-.3))
+        blocks.push(cylinder)
+
+        actionManagerIntersect(scene, cylinder, characterBody, () => {
+          alert("Game Over")
+        })
+    
+        setTimeout(() => {
+          blocks = blocks.filter(blck => blck.id !== meshId)
+          cylinder.dispose();
+          material.dispose(); // Dispose the material to free up resources
+      }, 10000);
+    }, 1000);
+  }
