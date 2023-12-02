@@ -5,9 +5,13 @@
     "element1build": "tsc && vite build element1",
     "element1preview": "vite preview element1",
     "element2build": "tsc && vite build element2",
+    "element2preview": "vite preview element2",
     "element3build": "tsc && vite build element3",
+    "element3preview": "vite preview element3",
     "element4build": "tsc && vite build element4",
+    "element4preview": "vite preview element4",
     "element5build": "tsc && vite build element5",
+    "element5preview": "vite preview element5",
     "preview": "vite preview --port:8000"
     
 
