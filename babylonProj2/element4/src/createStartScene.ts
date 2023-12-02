@@ -413,7 +413,7 @@ let urlName = window.location.origin
       sound.play()
       setTimeout(() => {
 
-            window.location.replace(`${urlName}/element${elementNumber}/`)
+            window.location.replace(`${urlName}/dist/element${elementNumber}.html`)
        
       }, 1000);
    
